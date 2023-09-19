@@ -127,7 +127,7 @@ When searching large tables, removing matchers will significantly increase query
 
 ```php
 DB::table('users')
-  ->whereFuzzy('name', 'jd', [
+  ->whereFuzzy('name', 'jd', true, [
     'AcronymMatcher',
     'StudlyCaseMatcher',
   ]);
