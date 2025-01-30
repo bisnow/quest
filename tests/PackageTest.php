@@ -2,10 +2,10 @@
 
 namespace Quest\Tests;
 
-use PHPUnit\Framework\Attributes\Test;
 use Quest\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Test;
 
 class PackageTest extends TestCase
 {
