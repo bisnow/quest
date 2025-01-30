@@ -2,6 +2,9 @@ name: tests
 
 on: [push, pull_request]
 
+env:
+  DB_PASSWORD:
+
 jobs:
   phpunit:
     runs-on: ${{ matrix.os }}
