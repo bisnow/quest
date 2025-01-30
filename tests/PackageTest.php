@@ -2,6 +2,7 @@
 
 namespace Quest\Tests;
 
+use PHPUnit\Framework\Attributes\Test;
 use Quest\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +49,7 @@ class PackageTest extends TestCase
         DB::table('users')->insert(['name' => 'William Doe', 'nickname' => 'willy', 'country' => 'Italy']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_a_fuzzy_search_and_receive_one_result()
     {
         $results = DB::table('users')
@@ -59,7 +60,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_a_fuzzy_search_and_receive_multiple_results()
     {
         $results = DB::table('users')
@@ -71,7 +72,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results[1]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_a_fuzzy_search_and_paginate_multiple_results()
     {
         $results = DB::table('users')
@@ -87,7 +88,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results->items()[0]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_a_fuzzy_search_across_multiple_fields()
     {
         $results = DB::table('users')
@@ -99,7 +100,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results[0]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_order_a_fuzzy_search_by_one_field()
     {
         $results = DB::table('users')
@@ -113,7 +114,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results[1]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_order_a_fuzzy_search_by_multiple_fields()
     {
         $results = DB::table('users')
@@ -127,7 +128,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results[1]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_search()
     {
         $results = User::whereFuzzy('name', 'jad')
@@ -137,7 +138,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_or_search()
     {
         $results = User::whereFuzzy(function($query) {
@@ -149,7 +150,7 @@ class PackageTest extends TestCase
         $this->assertEquals('John Doe', $results->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_or_search_with_order()
     {
         $results = User::whereFuzzy(function($query) {
@@ -162,7 +163,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_or_search_with_relevance()
     {
         $results = User::whereFuzzy(function($query) {
@@ -176,7 +177,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Fred Doe', $results[1]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_and_search_with_fuzzy_order()
     {
         $results = User::whereFuzzy(function($query) {
@@ -189,7 +190,7 @@ class PackageTest extends TestCase
         $this->assertEquals('Jane Doe', $results->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_limit_minimum_score()
     {
         $results = User::whereFuzzy('name', 'joh Do')
@@ -205,7 +206,7 @@ class PackageTest extends TestCase
         $this->assertCount(0, $results);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_and_search_with_enabled_fuzzy_order_having_clause()
     {
         $results = User::whereFuzzy(function($query) {
@@ -217,7 +218,7 @@ class PackageTest extends TestCase
         $this->assertStringContainsString('order by', $results->toSql());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_an_eloquent_fuzzy_and_search_with_disabled_fuzzy_order_having_clause()
     {
         $results = User::whereFuzzy(function($query) {
@@ -229,7 +230,7 @@ class PackageTest extends TestCase
         $this->assertStringNotContainsString('order by', $results->toSql());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_disable_matchers()
     {
         $results = User::whereFuzzy(function($query) {
@@ -241,7 +242,7 @@ class PackageTest extends TestCase
         $this->assertStringNotContainsString("LIKE BINARY 'J%A%D%', 32, 0)", $results->toSql());
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_disable_matchers()
     {
         $results = User::whereFuzzy(function($query) {
