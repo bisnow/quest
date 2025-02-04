@@ -1,15 +1,26 @@
 # Quest
 
+This is a Bisnow fork of the package
+
 This package enables pseudo fuzzy-searching within Laravel database and Eloquent queries. Due to its pattern matching methods, it only supports **MySQL** or **MariaDB**, though I welcome any PRs to enable support for databases like Postgres.
 
 Much of this library is based on the fantastic work of Tom Lingham for the now abandoned [Laravel Searchy](https://github.com/TomLingham/Laravel-Searchy) package. If you're interested in the background of how the fuzzy searching works, check out the readme for that project.
 
 ## Installation
 
-Pull in the package using composer
+First, add the following to the list of `repositories` in your `composer.json` file:
+
+```json
+{
+  "type": "github",
+  "url": "git@github.com:bisnow/quest.git"
+}
+```
+
+Then, install the package:
 
 ```bash
-composer require caneara/quest
+composer require bisnow/quest
 ```
 
 ## Usage
