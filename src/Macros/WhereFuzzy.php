@@ -1,18 +1,20 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Quest\Macros;
 
-use Quest\Matchers\ExactMatcher;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Quest\Matchers\AcronymMatcher;
-use Quest\Matchers\InStringMatcher;
-use Quest\Matchers\StudlyCaseMatcher;
-use Illuminate\Database\Query\Builder;
-use Quest\Matchers\StartOfWordsMatcher;
-use Quest\Matchers\StartOfStringMatcher;
-use Quest\Matchers\TimesInStringMatcher;
-use Illuminate\Database\Query\Expression;
 use Quest\Matchers\ConsecutiveCharactersMatcher;
+use Quest\Matchers\ExactMatcher;
+use Quest\Matchers\InStringMatcher;
+use Quest\Matchers\StartOfStringMatcher;
+use Quest\Matchers\StartOfWordsMatcher;
+use Quest\Matchers\StudlyCaseMatcher;
+use Quest\Matchers\TimesInStringMatcher;
 
 class WhereFuzzy
 {
@@ -46,7 +48,7 @@ class WhereFuzzy
 
         $builder
             ->addSelect([static::pipeline($field, $nativeField, $value, $disabledMatchers)])
-            ->when($sortMatchesFilterRelevance, function(Builder $query) use ($field) {
+            ->when($sortMatchesFilterRelevance, function (Builder $query) use ($field): void {
                 $query->having('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
             });
 
@@ -69,7 +71,7 @@ class WhereFuzzy
         }
 
         $builder->addSelect([static::pipeline($field, $nativeField, $value, $disabledMatchers)])
-            ->when($sortMatchesFilterRelevance, function(Builder $query) use ($field, $relevance) {
+            ->when($sortMatchesFilterRelevance, function (Builder $query) use ($field, $relevance): void {
                 $query->orHaving('fuzzy_relevance_' . str_replace('.', '_', $field), '>', $relevance);
             });
 
@@ -84,7 +86,6 @@ class WhereFuzzy
      * Searches all relevance columns and parses the relevance
      * expressions to create the total relevance column
      * and creates the order statement for it.
-     *
      */
     protected static function calculateTotalRelevanceColumn($builder, $sortMatchesFilterRelevance): bool
     {
@@ -140,9 +141,8 @@ class WhereFuzzy
                     ) === false
                 )
             ) {
-                $builder->when($sortMatchesFilterRelevance, function(Builder $query) {
+                $builder->when($sortMatchesFilterRelevance, function (Builder $query): void {
                     $query->orderBy('_fuzzy_relevance_', 'desc');
-                    ;
                 });
             }
 
