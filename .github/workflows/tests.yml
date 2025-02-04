@@ -10,13 +10,15 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php: [8.4, 8.3]
-        laravel: [11.*, 10.*]
+        laravel: [ 11.*, 10.*, 9.* ]
         dependency-version: [prefer-stable]
         include:
           - laravel: 11.*
-          - testbench: 9.*
+            testbench: 9.*
           - laravel: 10.*
             testbench: 8.*
+          - laravel: 9.*
+            testbench: 7.*
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
@@ -44,7 +46,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          extensions: psr, mbstring, dom, fileinfo, mysql
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
           coverage: none
 
       - name: Run composer
