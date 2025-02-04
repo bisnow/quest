@@ -1,13 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Quest;
 
 use Closure;
-use Quest\Macros\WhereFuzzy;
-use Quest\Macros\OrderByFuzzy;
 use Illuminate\Database\Query\Builder;
-use Quest\Macros\withMinimumRelevance;
 use Illuminate\Support\ServiceProvider as Provider;
+use Quest\Macros\OrderByFuzzy;
+use Quest\Macros\WhereFuzzy;
+use Quest\Macros\withMinimumRelevance;
 
 class ServiceProvider extends Provider
 {
@@ -19,7 +21,7 @@ class ServiceProvider extends Provider
     {
         Builder::macro('orderByFuzzy', fn ($fields) => OrderByFuzzy::make($this, $fields));
 
-        Builder::macro('whereFuzzy', function($field, $value = null, $sortMatchesFilterRelevance = true, $disabledMatchers = []) {
+        Builder::macro('whereFuzzy', function ($field, $value = null, $sortMatchesFilterRelevance = true, $disabledMatchers = []) {
             // check if first param is a closure and execute it if it is, passing the current builder as parameter
             // so when $query->orWhereFuzzy, $query will be the current query builder, not a new instance
             if ($field instanceof Closure) {
@@ -32,7 +34,7 @@ class ServiceProvider extends Provider
             return WhereFuzzy::make($this, $field, $value, $sortMatchesFilterRelevance, $disabledMatchers);
         });
 
-        Builder::macro('orWhereFuzzy', function($field, $value = null, $relevance = 0, $sortMatchesFilterRelevance = true, $disabledMatchers = []) {
+        Builder::macro('orWhereFuzzy', function ($field, $value = null, $relevance = 0, $sortMatchesFilterRelevance = true, $disabledMatchers = []) {
             if ($field instanceof Closure) {
                 $field($this);
 

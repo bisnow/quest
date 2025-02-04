@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Quest\Tests;
 
-use Quest\ServiceProvider;
-use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\DB;
+use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Quest\ServiceProvider;
 
 class PackageTest extends TestCase
 {
@@ -50,7 +52,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_a_fuzzy_search_and_receive_one_result()
+    public function it_can_perform_a_fuzzy_search_and_receive_one_result(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('users.name', 'jad')
@@ -61,7 +63,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_a_fuzzy_search_and_receive_multiple_results()
+    public function it_can_perform_a_fuzzy_search_and_receive_multiple_results(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('name', 'jd')
@@ -73,7 +75,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_a_fuzzy_search_and_paginate_multiple_results()
+    public function it_can_perform_a_fuzzy_search_and_paginate_multiple_results(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('name', 'jd')
@@ -89,7 +91,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_a_fuzzy_search_across_multiple_fields()
+    public function it_can_perform_a_fuzzy_search_across_multiple_fields(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('name', 'jd')
@@ -101,7 +103,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_order_a_fuzzy_search_by_one_field()
+    public function it_can_order_a_fuzzy_search_by_one_field(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('name', 'jd')
@@ -115,7 +117,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_order_a_fuzzy_search_by_multiple_fields()
+    public function it_can_order_a_fuzzy_search_by_multiple_fields(): void
     {
         $results = DB::table('users')
             ->whereFuzzy('name', 'jd')
@@ -129,7 +131,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_search()
+    public function it_can_perform_an_eloquent_fuzzy_search(): void
     {
         $results = User::whereFuzzy('name', 'jad')
             ->get();
@@ -139,9 +141,9 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_or_search()
+    public function it_can_perform_an_eloquent_fuzzy_or_search(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->orWhereFuzzy('name', 'jndoe');
             $query->orWhereFuzzy('nickname', 'jndoe');
         })
@@ -151,9 +153,9 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_or_search_with_order()
+    public function it_can_perform_an_eloquent_fuzzy_or_search_with_order(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->orWhereFuzzy('name', 'jad');
             $query->orWhereFuzzy('nickname', 'jndoe');
         })
@@ -164,9 +166,9 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_or_search_with_relevance()
+    public function it_can_perform_an_eloquent_fuzzy_or_search_with_relevance(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->orWhereFuzzy('name', 'ed', 30); // Jane Doe has a relevance of 11
             $query->orWhereFuzzy('country', 'Italy', 10);
         })
@@ -178,9 +180,9 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_and_search_with_fuzzy_order()
+    public function it_can_perform_an_eloquent_fuzzy_and_search_with_fuzzy_order(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->whereFuzzy('name', 'jad');
             $query->whereFuzzy('nickname', 'jndoe');
         })
@@ -191,7 +193,7 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_limit_minimum_score()
+    public function it_can_limit_minimum_score(): void
     {
         $results = User::whereFuzzy('name', 'joh Do')
             ->withMinimumRelevance(65)
@@ -207,33 +209,31 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_and_search_with_enabled_fuzzy_order_having_clause()
+    public function it_can_perform_an_eloquent_fuzzy_and_search_with_enabled_fuzzy_order_having_clause(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->whereFuzzy('name', 'jad', true);
             $query->whereFuzzy('name', 'William Doe', true);
-
         });
 
         $this->assertStringContainsString('order by', $results->toSql());
     }
 
     #[Test]
-    public function it_can_perform_an_eloquent_fuzzy_and_search_with_disabled_fuzzy_order_having_clause()
+    public function it_can_perform_an_eloquent_fuzzy_and_search_with_disabled_fuzzy_order_having_clause(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->whereFuzzy('name', 'jad', false);
             $query->whereFuzzy('name', 'wp', false);
-
         });
 
         $this->assertStringNotContainsString('order by', $results->toSql());
     }
 
     #[Test]
-    public function it_can_disable_matchers()
+    public function it_can_disable_matchers(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->whereFuzzy('name', 'jad', true, [
                 'StudlyCaseMatcher',
             ]);
@@ -243,9 +243,9 @@ class PackageTest extends TestCase
     }
 
     #[Test]
-    public function it_does_not_disable_matchers()
+    public function it_does_not_disable_matchers(): void
     {
-        $results = User::whereFuzzy(function($query) {
+        $results = User::whereFuzzy(function ($query): void {
             $query->whereFuzzy('name', 'jad', true);
         });
 
