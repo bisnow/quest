@@ -15,10 +15,13 @@ jobs:
         include:
           - laravel: 11.*
             testbench: 9.*
+            phpunit_config: phpunit.dist.xml
           - laravel: 10.*
             testbench: 8.*
+            phpunit_config: phpunit.dist.xml
           - laravel: 9.*
             testbench: 7.*
+            phpunit_config: phpunit_9.xml
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
@@ -46,7 +49,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          extensions: psr, mbstring, dom, fileinfo, mysql
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
           coverage: none
 
       - name: Run composer
@@ -55,6 +60,6 @@ jobs:
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
 
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit -c ${{ matrix.phpunit_config }}
         env:
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
