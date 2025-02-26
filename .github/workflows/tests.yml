@@ -1,6 +1,6 @@
 name: tests
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   phpunit:
@@ -8,10 +8,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest]
-        php: [8.4, 8.3]
-        laravel: [ 12.*, 11.*, 10.*, 9.* ]
-        dependency-version: [prefer-stable]
+        os: [ ubuntu-latest ]
+        php: [ 8.4, 8.3 ]
+        laravel: [ 12.*, 11.*, 10.* ]
+        dependency-version: [ prefer-stable ]
         include:
           - laravel: 12.*
             testbench: 10.*
@@ -22,9 +22,9 @@ jobs:
           - laravel: 10.*
             testbench: 8.*
             phpunit_config: phpunit.dist.xml
-          - laravel: 9.*
-            testbench: 7.*
-            phpunit_config: phpunit_9.xml
+    #          - laravel: 9.*
+    #            testbench: 7.*
+    #            phpunit_config: phpunit_9.xml
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
