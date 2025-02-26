@@ -9,7 +9,6 @@ use Illuminate\Support\Arr;
 
 class OrderByFuzzy
 {
-
     /**
      * Construct a fuzzy search expression.
      *
