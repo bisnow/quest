@@ -22,9 +22,9 @@ jobs:
           - laravel: 10.*
             testbench: 8.*
             phpunit_config: phpunit.dist.xml
-                              - laravel: 9.*
-                              testbench: 7.*
-                              phpunit_config: phpunit_9.xml
+          - laravel: 9.*
+            testbench: 7.*
+            phpunit_config: phpunit_9.xml
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
