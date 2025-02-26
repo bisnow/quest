@@ -6,16 +6,8 @@ namespace Quest\Matchers;
 
 class AcronymMatcher extends BaseMatcher
 {
-    /**
-     * The operator to use for the WHERE clause.
-     *
-     **/
     protected string $operator = 'LIKE';
 
-    /**
-     * Format the given search term.
-     *
-     **/
     public function formatSearchString(string $value) : string
     {
         $results = [];

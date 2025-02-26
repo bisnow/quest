@@ -6,11 +6,11 @@ namespace Quest\Matchers;
 
 abstract class BaseMatcher
 {
-    /**
-     * The weight to apply to the match.
-     *
-     **/
+    /** The weight to apply to the match. */
     protected int $multiplier;
+
+    /** The operator to use for the WHERE clause.  */
+    protected string $operator;
 
     /**
      * Constructor.
