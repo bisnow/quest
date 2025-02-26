@@ -6,9 +6,5 @@ namespace Quest\Matchers;
 
 class ExactMatcher extends BaseMatcher
 {
-    /**
-     * The operator to use for the WHERE clause.
-     *
-     **/
     protected string $operator = '=';
 }

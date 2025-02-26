@@ -6,16 +6,8 @@ namespace Quest\Matchers;
 
 class ConsecutiveCharactersMatcher extends BaseMatcher
 {
-    /**
-     * The operator to use for the WHERE clause.
-     *
-     **/
     protected string $operator = 'LIKE';
 
-    /**
-     * The process for building the query string.
-     *
-     **/
     public function buildQueryString(string $field, string $value) : string
     {
         $search = $this->formatSearchString($value);
@@ -24,10 +16,6 @@ class ConsecutiveCharactersMatcher extends BaseMatcher
                "(CHAR_LENGTH('$value') / CHAR_LENGTH(REPLACE($field, ' ', '')))), 0)";
     }
 
-    /**
-     * Format the given search term.
-     *
-     **/
     public function formatSearchString(string $value) : string
     {
         $results = [];

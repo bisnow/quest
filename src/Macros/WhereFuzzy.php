@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quest\Macros;
 
+use Illuminate\Contracts\Database\Query\Expression as ExpressionContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,8 @@ class WhereFuzzy
     /**
      * The weights for the pattern matching classes.
      *
-     **/
+     * @var array<class-string,int>
+     */
     protected static array $matchers = [
         ExactMatcher::class                 => 100,
         StartOfStringMatcher::class         => 50,
@@ -36,10 +38,18 @@ class WhereFuzzy
     /**
      * Construct a fuzzy search expression.
      *
-     **/
-    public static function make(Builder $builder, $field, $value, $sortMatchesFilterRelevance, $disabledMatchers): Builder
+     * @param  Builder  $builder
+     * @param  string  $field
+     * @param  string  $value
+     * @param  bool  $sortMatchesFilterRelevance
+     * @param  array<int,string>  $disabledMatchers
+     *
+     * @return Builder
+     */
+    public static function make(Builder $builder, string $field, string $value, bool $sortMatchesFilterRelevance, array $disabledMatchers): Builder
     {
         $value       = static::escapeValue($value);
+
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
         if (! is_array($builder->columns) || empty($builder->columns)) {
@@ -60,9 +70,23 @@ class WhereFuzzy
     /**
      * Construct a fuzzy OR search expression.
      *
-     **/
-    public static function makeOr(Builder $builder, $field, $value, $relevance, $sortMatchesFilterRelevance, $disabledMatchers): Builder
-    {
+     * @param  Builder  $builder
+     * @param  string  $field
+     * @param  string  $value
+     * @param  float|int|string|null  $relevance
+     * @param  bool  $sortMatchesFilterRelevance
+     * @param  array<int,string>  $disabledMatchers
+     *
+     * @return Builder
+     */
+    public static function makeOr(
+        Builder $builder,
+        string $field,
+        string $value,
+        float|int|string|null $relevance,
+        bool $sortMatchesFilterRelevance,
+        array $disabledMatchers,
+    ): Builder {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
@@ -87,91 +111,106 @@ class WhereFuzzy
      * expressions to create the total relevance column
      * and creates the order statement for it.
      */
-    protected static function calculateTotalRelevanceColumn($builder, $sortMatchesFilterRelevance): bool
+    protected static function calculateTotalRelevanceColumn(Builder $builder, bool $sortMatchesFilterRelevance): bool
     {
-        if (! empty($builder->columns)) {
-            $existingRelevanceColumns = [];
-            $sumColumnIdx             = null;
+        if (blank($builder->columns)) {
+            return false;
+        }
+        $existingRelevanceColumns = [];
+        $sumColumnIdx             = null;
 
-            // search for fuzzy_relevance_* columns and _fuzzy_relevance_ position
-            foreach ($builder->columns as $as => $column) {
-                if ($column instanceof Expression) {
-                    if (stripos($column->getValue(DB::getQueryGrammar()), 'AS fuzzy_relevance_')) {
-                        $matches = [];
+        // search for fuzzy_relevance_* columns and _fuzzy_relevance_ position
+        foreach ($builder->columns as $as => $column) {
+            if ($column instanceof Expression) {
+                /** @var string $columnValue */
+                $columnValue = $column->getValue(DB::getQueryGrammar());
 
-                        preg_match('/AS (fuzzy_relevance_.*)$/', $column->getValue(DB::getQueryGrammar()), $matches);
+                if (stripos($columnValue, 'AS fuzzy_relevance_')) {
+                    $matches = [];
 
-                        if (! empty($matches[1])) {
-                            $existingRelevanceColumns[$as] = $matches[1];
-                        }
-                    } elseif (stripos($column->getValue(DB::getQueryGrammar()), 'AS _fuzzy_relevance_')) {
-                        $sumColumnIdx = $as;
+                    preg_match('/AS (fuzzy_relevance_.*)$/', $columnValue, $matches);
+
+                    $match = data_get($matches, 1);
+
+                    if (filled($match)) {
+                        $existingRelevanceColumns[$as] = $match;
                     }
+                } elseif (stripos($columnValue, 'AS _fuzzy_relevance_')) {
+                    $sumColumnIdx = $as;
                 }
             }
-
-            // glue together all relevance expresions under _fuzzy_relevance_ column
-            $relevanceTotalColumn = '';
-
-            foreach ($existingRelevanceColumns as $as => $column) {
-                $relevanceTotalColumn .= (! empty($relevanceTotalColumn) ? ' + ' : '')
-                    . '('
-                    . str_ireplace(' AS ' . $column, '', $builder->columns[$as]->getValue(DB::getQueryGrammar()))
-                    . ')';
-            }
-
-            $relevanceTotalColumn .= ' AS _fuzzy_relevance_';
-
-            if (is_null($sumColumnIdx)) {
-                // no sum column yet, just add this one
-                $builder->addSelect([new Expression($relevanceTotalColumn)]);
-            } else {
-                // update the existing one
-                $builder->columns[$sumColumnIdx] = new Expression($relevanceTotalColumn);
-            }
-
-            // only add the _fuzzy_relevance_ ORDER once
-            if (
-                ! $builder->orders
-                || (
-                    $builder->orders
-                    && array_search(
-                        '_fuzzy_relevance_',
-                        array_column($builder->orders, 'column')
-                    ) === false
-                )
-            ) {
-                $builder->when($sortMatchesFilterRelevance, function (Builder $query): void {
-                    $query->orderBy('_fuzzy_relevance_', 'desc');
-                });
-            }
-
-            return true;
         }
 
-        return false;
+        // glue together all relevance expressions under _fuzzy_relevance_ column
+        $relevanceTotalColumn = '';
+
+        /**
+         * @var string $as
+         * @var string $column
+         */
+        foreach ($existingRelevanceColumns as $as => $column) {
+            /** @var string $subject */
+            $subject = $builder->columns[$as]->getValue(DB::getQueryGrammar());
+
+            $relevanceTotalColumn .= (! empty($relevanceTotalColumn) ? ' + ' : '')
+                                     . '('
+                                     . str_ireplace(' AS ' . $column, '', $subject)
+                                     . ')';
+        }
+
+        $relevanceTotalColumn .= ' AS _fuzzy_relevance_';
+
+        if (is_null($sumColumnIdx)) {
+            // no sum column yet, just add this one
+            $builder->addSelect([new Expression($relevanceTotalColumn)]);
+        } else {
+            // update the existing one
+            $builder->columns[$sumColumnIdx] = new Expression($relevanceTotalColumn);
+        }
+
+        // only add the _fuzzy_relevance_ ORDER once
+        if (
+            ! $builder->orders
+            || ! in_array(
+                '_fuzzy_relevance_',
+                array_column($builder->orders, 'column')
+            )
+        ) {
+            $builder->when($sortMatchesFilterRelevance, function (Builder $query): void {
+                $query->orderBy('_fuzzy_relevance_', 'desc');
+            });
+        }
+
+        return true;
     }
 
     /**
      * Escape value input for fuzzy search.
      */
-    protected static function escapeValue($value)
+    protected static function escapeValue(string $value): string
     {
         $value = str_replace(['"', "'", '`'], '', $value);
-        $value = substr(DB::connection()->getPdo()->quote($value), 1, -1);
 
-        return $value;
+        return substr(DB::connection()->getPdo()->quote($value), 1, -1);
     }
 
     /**
      * Execute each of the pattern matching classes to generate the required SQL.
      *
-     **/
-    protected static function pipeline($field, $native, $value, $disabledMatchers): Expression
+     * @param  string  $field
+     * @param  string  $native
+     * @param  string  $value
+     * @param  array<int,string>  $disabledMatchers
+     *
+     * @return ExpressionContract
+     */
+    protected static function pipeline(string $field, string $native, string $value, array $disabledMatchers): ExpressionContract
     {
         $disabledMatchers = preg_filter('/^/', 'Quest\Matchers\\', $disabledMatchers);
 
+        /** @phpstan-ignore-next-line */
         $sql = collect(static::$matchers)->forget($disabledMatchers)->map(
+            /** @phpstan-ignore-next-line */
             fn ($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
