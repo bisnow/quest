@@ -202,18 +202,22 @@ class WhereFuzzy
      * @param  string  $value
      * @param  array<int,string>  $disabledMatchers
      *
-     * @return ExpressionContract
+     * @return ExpressionContract|Expression
      */
-    protected static function pipeline(string $field, string $native, string $value, array $disabledMatchers): ExpressionContract
+    protected static function pipeline(string $field, string $native, string $value, array $disabledMatchers): ExpressionContract|Expression
     {
         $disabledMatchers = preg_filter('/^/', 'Quest\Matchers\\', $disabledMatchers);
 
-        /** @phpstan-ignore-next-line */
         $sql = collect(static::$matchers)->forget($disabledMatchers)->map(
-            /** @phpstan-ignore-next-line */
-            fn ($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
+            fn ($multiplier, $matcher) => static::resolveMatcher($matcher, $multiplier, $native, $value)
         );
 
         return DB::raw($sql->implode(' + ') . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
+    }
+
+    protected static function resolveMatcher(string $matcher, int $multiplier, string $native, string $value): string
+    {
+        return app($matcher, ['multiplier' => $multiplier])
+            ->buildQueryString("COALESCE($native, '')", $value);
     }
 }
